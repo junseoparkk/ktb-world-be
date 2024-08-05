@@ -36,8 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-### yml ###
-application-dev.yml
+### env ###
+.env
 
 ### sql ###
 *.sql

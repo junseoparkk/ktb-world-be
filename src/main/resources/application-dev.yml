@@ -1,0 +1,20 @@
+spring:
+  sql:
+    init:
+      mode: always # 애플리케이션 실행 시 SQL 스크립트 자동 실행 방지 -> 최초 실행 후 never로 변경
+      continue-on-error: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: create # Hibernate가 데이터베이스 스키마를 변경하지 않도록 설정
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        use_sql_comments: true
