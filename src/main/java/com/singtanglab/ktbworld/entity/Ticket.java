@@ -29,8 +29,7 @@ public class Ticket extends BaseTimeEntity {
     @Column(name = "ticket_id")
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private Category category;
+    private String category;
 
     private String status;
     private String title;
@@ -64,7 +63,7 @@ public class Ticket extends BaseTimeEntity {
     private List<UserTicket> userTickets = new LinkedList<>();
 
     // 공통 생성자
-    public Ticket(Category category, String status, String title, String description, boolean isLimited,
+    public Ticket(String category, String status, String title, String description, boolean isLimited,
                   int capacity, String account) {
         this.category = category;
         this.status = status;
@@ -77,7 +76,7 @@ public class Ticket extends BaseTimeEntity {
 
     // 세탁 생성자
     @Builder
-    public Ticket(Category category, String status, String title, String description, boolean isLimited,
+    public Ticket(String category, String status, String title, String description, boolean isLimited,
                   int capacity, String laundryColor, boolean isDry, int machineId, String account,
                   LocalDateTime startTime, LocalDateTime endTime) {
         this.category = category;
@@ -96,8 +95,8 @@ public class Ticket extends BaseTimeEntity {
 
     // 택시 생성자
     @Builder
-    public Ticket (Category category, String status, String title, String description, boolean isLimited,
-                  int capacity, String destination, String account, LocalDateTime startTime) {
+    public Ticket (String category, String status, String title, String description, boolean isLimited,
+                   int capacity, String destination, String account, LocalDateTime startTime) {
         this.category = category;
         this.status = status;
         this.title = title;
@@ -109,3 +108,4 @@ public class Ticket extends BaseTimeEntity {
         this.startTime = startTime;
     }
 }
+

@@ -40,7 +40,7 @@ public class TicketServiceImpl implements TicketService {
                     throw new RuntimeException("All washing machines are booked at that time");
                 }
                 ticket = Ticket.builder()
-                        .category(Category.LAUNDRY)
+                        .category(request.category())
                         .status("모집중")
                         .title(request.title())
                         .description(request.description())
@@ -55,7 +55,7 @@ public class TicketServiceImpl implements TicketService {
                         .build();
             } else if (request.category().equalsIgnoreCase("택시")) {
                 ticket = Ticket.builder()
-                        .category(Category.TAXI)
+                        .category(request.category())
                         .status("모집중")
                         .title(request.title())
                         .description(request.description())
@@ -67,7 +67,7 @@ public class TicketServiceImpl implements TicketService {
                         .build();
             } else {
                 ticket = new Ticket(
-                        Category.valueOf("GONGGU"),
+                        request.category(),
                         "모집중",
                         request.title(),
                         request.description(),
@@ -98,6 +98,7 @@ public class TicketServiceImpl implements TicketService {
 
     private int assignMachineId(LocalDateTime startTime, LocalDateTime endTime) {
         List<Integer> bookedMachineIds = ticketRepository.findBookedMachineIds(startTime, endTime);
+        log.info("Booked machine IDs for the given time slot ({} - {}): {}", startTime, endTime, bookedMachineIds);
         if (!bookedMachineIds.contains(1)) {
             return 1;
         } else if (!bookedMachineIds.contains(2)) {
@@ -134,7 +135,7 @@ public class TicketServiceImpl implements TicketService {
         List<TicketData> ticketDataList = tickets.stream()
                 .map(ticket -> new TicketData(
                         ticket.getId(),
-                        ticket.getCategory().name(),
+                        ticket.getCategory(),
                         ticket.getTitle(),
                         ticket.getDescription(),
                         ticket.getUserTickets().stream().map(ut -> ut.getUser().getId().intValue()).collect(Collectors.toList()),
@@ -154,7 +155,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private boolean isLaundryInProgress(Ticket ticket, LocalDateTime now) {
-        return ticket.getCategory() == Category.LAUNDRY && !ticket.getStatus().equalsIgnoreCase("마감") && ticket.getStartTime().isBefore(now) && ticket.getEndTime().isAfter(now);
+        return ticket.getCategory() == "세탁" && !ticket.getStatus().equalsIgnoreCase("마감") && ticket.getStartTime().isBefore(now) && ticket.getEndTime().isAfter(now);
     }
 
     @Override
@@ -173,8 +174,8 @@ public class TicketServiceImpl implements TicketService {
                 .orElse(ticket.getCreatedAt());
 
         TicketDetailResponse.TicketData data = new TicketDetailResponse.TicketData(
-                ticket.getCategory().name(),
-                ticket.getCategory() == Category.LAUNDRY ? ticket.getMachineId() : null,
+                ticket.getCategory(),
+                ticket.getCategory().equalsIgnoreCase("세탁") ? ticket.getMachineId() : null,
                 ticket.getStatus(),
                 ticket.getTitle(),
                 ticket.getDescription(),
@@ -187,3 +188,4 @@ public class TicketServiceImpl implements TicketService {
     }
 
 }
+
