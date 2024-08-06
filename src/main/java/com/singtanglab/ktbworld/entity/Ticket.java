@@ -14,15 +14,15 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 @Entity
 @Getter
 @Table(name = "tickets")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Ticket extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,8 +79,7 @@ public class Ticket extends BaseTimeEntity {
     @Builder
     public Ticket(Category category, String status, String title, String description, boolean isLimited,
                   int capacity, String laundryColor, boolean isDry, int machineId, String account,
-                  LocalDateTime startTime,
-                  LocalDateTime endTime) {
+                  LocalDateTime startTime, LocalDateTime endTime) {
         this.category = category;
         this.status = status;
         this.title = title;
@@ -97,7 +96,7 @@ public class Ticket extends BaseTimeEntity {
 
     // 택시 생성자
     @Builder
-    public Ticket(Category category, String status, String title, String description, boolean isLimited,
+    public Ticket (Category category, String status, String title, String description, boolean isLimited,
                   int capacity, String destination, String account, LocalDateTime startTime) {
         this.category = category;
         this.status = status;
