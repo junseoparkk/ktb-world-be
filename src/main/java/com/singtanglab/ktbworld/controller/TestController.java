@@ -1,6 +1,5 @@
 package com.singtanglab.ktbworld.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.singtanglab.ktbworld.entity.PublicData;
@@ -17,7 +16,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,16 +60,13 @@ public class TestController implements CommandLineRunner {
                 requestEntity,
                 String.class
         );
-        log.info("response : {}", response);
         String jsonResponse = response.getBody();
-        log.info("jsonResponse : {}", jsonResponse);
 
         // 야매버전
         try {
             Map<String, Object> jsonDataMap = objectMapper.readValue(jsonResponse, Map.class);
             // 출력하여 확인
             apiMapData = jsonDataMap;
-            log.info("apiMapData : {}", apiMapData);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,7 +75,6 @@ public class TestController implements CommandLineRunner {
         try {
             // JSON 문자열을 PublicDataResponse 객체 리스트로 변환
             PublicDataResponse publicDataResponse = objectMapper.readValue(jsonResponse, PublicDataResponse.class);
-            log.info("publicDataResponse : {}", publicDataResponse);
 
             // 필터링된 데이터 저장
             List<PublicData> publicDataList = Collections.emptyList();

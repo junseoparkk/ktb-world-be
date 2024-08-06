@@ -3,7 +3,6 @@ package com.singtanglab.ktbworld.service.place;
 import com.singtanglab.ktbworld.controller.TestController;
 import com.singtanglab.ktbworld.dto.place.PlaceDto;
 import com.singtanglab.ktbworld.entity.PublicData;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,9 +19,7 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public List<PlaceDto> findPlaces(String section) {
-        log.info("PlaceService findPlaces");
         Map<String, Object> apiDataList = testController.getApiMapData();
-        log.info("PlaceService apiDataList : {}", apiDataList);
 
         // 필터링에 사용할 단어 리스트
         List<String> filterKeywords;

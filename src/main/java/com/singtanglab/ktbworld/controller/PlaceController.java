@@ -21,9 +21,7 @@ public class PlaceController {
     @GetMapping("/{section}")
     public ResponseEntity<List<PlaceDto>> getPlace(@PathVariable("section") String section) {
         try {
-            log.info("PlaceController");
             List<PlaceDto> places = placeService.findPlaces(section);
-            log.info("PlaceController 서비스 결과값 : {}", places);
             return ResponseEntity.ok(places);
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(null);
