@@ -1,16 +1,8 @@
 package com.singtanglab.ktbworld.entity;
 
 import com.singtanglab.ktbworld.BaseTimeEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +20,10 @@ public class Ticket extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private String category;
 
@@ -63,8 +59,9 @@ public class Ticket extends BaseTimeEntity {
     private List<UserTicket> userTickets = new LinkedList<>();
 
     // 공통 생성자
-    public Ticket(String category, String status, String title, String description, boolean isLimited,
+    public Ticket(User user,String category, String status, String title, String description, boolean isLimited,
                   int capacity, String account) {
+        this.user = user;
         this.category = category;
         this.status = status;
         this.title = title;
@@ -75,10 +72,10 @@ public class Ticket extends BaseTimeEntity {
     }
 
     // 세탁 생성자
-    @Builder
-    public Ticket(String category, String status, String title, String description, boolean isLimited,
+    public Ticket(User user,String category, String status, String title, String description, boolean isLimited,
                   int capacity, String laundryColor, boolean isDry, int machineId, String account,
                   LocalDateTime startTime, LocalDateTime endTime) {
+        this.user = user;
         this.category = category;
         this.status = status;
         this.title = title;
@@ -94,9 +91,9 @@ public class Ticket extends BaseTimeEntity {
     }
 
     // 택시 생성자
-    @Builder
-    public Ticket (String category, String status, String title, String description, boolean isLimited,
+    public Ticket (User user, String category, String status, String title, String description, boolean isLimited,
                    int capacity, String destination, String account, LocalDateTime startTime) {
+        this.user = user;
         this.category = category;
         this.status = status;
         this.title = title;

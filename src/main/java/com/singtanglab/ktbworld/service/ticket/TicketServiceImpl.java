@@ -33,40 +33,45 @@ public class TicketServiceImpl implements TicketService {
     @Transactional
     public TicketResponse createTicket(TicketRequest request) {
         try {
+            User creator = userRepository.findById(request.creator())
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + request.creator()));
             Ticket ticket;
             if (request.category().equalsIgnoreCase("세탁")) {
                 int machineId = assignMachineId(request.start_time(), request.end_time());
                 if (machineId == -1) {
                     throw new RuntimeException("All washing machines are booked at that time");
                 }
-                ticket = Ticket.builder()
-                        .category(request.category())
-                        .status("모집중")
-                        .title(request.title())
-                        .description(request.description())
-                        .isLimited(request.is_limited())
-                        .capacity(request.capacity())
-                        .laundryColor(request.laundry_color())
-                        .isDry(request.is_dry())
-                        .machineId(machineId)
-                        .account(request.account())
-                        .startTime(request.start_time())
-                        .endTime(request.end_time())
-                        .build();
+                ticket = new Ticket(
+                        creator,
+                        request.category(),
+                        "모집중",
+                        request.title(),
+                        request.description(),
+                        request.is_limited(),
+                        request.capacity(),
+                        request.laundry_color(),
+                        request.is_dry(),
+                        machineId,
+                        request.account(),
+                        request.start_time(),
+                        request.end_time()
+                        );
             } else if (request.category().equalsIgnoreCase("택시")) {
-                ticket = Ticket.builder()
-                        .category(request.category())
-                        .status("모집중")
-                        .title(request.title())
-                        .description(request.description())
-                        .isLimited(request.is_limited())
-                        .capacity(request.capacity())
-                        .destination(request.destination())
-                        .account(request.account())
-                        .startTime(request.start_time())
-                        .build();
+                ticket = new Ticket(
+                        creator,
+                        request.category(),
+                        "모집중",
+                        request.title(),
+                        request.description(),
+                        request.is_limited(),
+                        request.capacity(),
+                        request.destination(),
+                        request.account(),
+                        request.start_time()
+                );
             } else {
                 ticket = new Ticket(
+                        creator,
                         request.category(),
                         "모집중",
                         request.title(),
