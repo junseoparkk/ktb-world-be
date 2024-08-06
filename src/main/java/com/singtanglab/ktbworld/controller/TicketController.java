@@ -22,7 +22,8 @@ public class TicketController {
             TicketResponse response = ticketService.createTicket(request);
             return ResponseEntity.status(201).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new TicketResponse("TICKET_CREATED_FAIL", e.getMessage()));
+            TicketResponse.Fail errorResponse = new TicketResponse.Fail("TICKET_CREATED_FAIL", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 }

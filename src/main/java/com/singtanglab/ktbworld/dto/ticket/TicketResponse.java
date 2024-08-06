@@ -1,9 +1,9 @@
 package com.singtanglab.ktbworld.dto.ticket;
 
-public record TicketResponse(String message, TicketData data) {
-    public record TicketData(Long ticket_id) {}
-
-    public TicketResponse(String message, String errorMessage) {
-        this(message, new TicketData(null));
+public sealed interface TicketResponse permits TicketResponse.Success, TicketResponse.Fail {
+    record Success(String message, TicketData data) implements TicketResponse {
+        public record TicketData(Long ticket_id) {}
     }
+
+    record Fail(String error, String message) implements TicketResponse {}
 }

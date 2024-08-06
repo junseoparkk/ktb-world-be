@@ -37,7 +37,7 @@ public class TicketServiceImpl implements TicketService {
                 }
                 ticket = Ticket.builder()
                         .category(Category.LAUNDRY)
-                        .status("대기중")
+                        .status("모집중")
                         .title(request.title())
                         .description(request.description())
                         .isLimited(request.is_limited())
@@ -85,7 +85,7 @@ public class TicketServiceImpl implements TicketService {
                 userTicketRepository.save(userTicket);
             }
 
-            return new TicketResponse("TICKET_CREATED_SUCCESS", new TicketResponse.TicketData(savedTicket.getId()));
+            return new TicketResponse.Success("TICKET_CREATED_SUCCESS",new TicketResponse.Success.TicketData(savedTicket.getId()));
         } catch (Exception e) {
             log.error("Exception during ticket creation: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
