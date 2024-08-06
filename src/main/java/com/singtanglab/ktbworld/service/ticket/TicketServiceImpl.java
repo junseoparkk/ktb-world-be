@@ -5,7 +5,6 @@ import com.singtanglab.ktbworld.dto.ticket.TicketListResponse;
 import com.singtanglab.ktbworld.dto.ticket.TicketRequest;
 import com.singtanglab.ktbworld.dto.ticket.TicketResponse;
 import com.singtanglab.ktbworld.dto.ticket.TicketListResponse.TicketData;
-import com.singtanglab.ktbworld.entity.Category;
 import com.singtanglab.ktbworld.entity.Ticket;
 import com.singtanglab.ktbworld.entity.User;
 import com.singtanglab.ktbworld.entity.UserTicket;
@@ -124,7 +123,7 @@ public class TicketServiceImpl implements TicketService {
         } else if (category.equalsIgnoreCase("세탁")) {
             tickets = ticketRepository.findActiveLaundryTickets(now);
         } else {
-            tickets = ticketRepository.findAllTicketsByCategory(Category.valueOf(category.toUpperCase()));
+            tickets = ticketRepository.findAllTicketsByCategory(category);
         }
 
         if (filter.equalsIgnoreCase("모집중")) {
@@ -139,6 +138,7 @@ public class TicketServiceImpl implements TicketService {
 
         List<TicketData> ticketDataList = tickets.stream()
                 .map(ticket -> new TicketData(
+                        ticket.getUser().getId(),
                         ticket.getId(),
                         ticket.getCategory(),
                         ticket.getTitle(),
@@ -160,7 +160,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private boolean isLaundryInProgress(Ticket ticket, LocalDateTime now) {
-        return ticket.getCategory() == "세탁" && !ticket.getStatus().equalsIgnoreCase("마감") && ticket.getStartTime().isBefore(now) && ticket.getEndTime().isAfter(now);
+        return ticket.getCategory().equalsIgnoreCase("세탁") && !ticket.getStatus().equalsIgnoreCase("마감") && ticket.getStartTime().isBefore(now) && ticket.getEndTime().isAfter(now);
     }
 
     @Override
