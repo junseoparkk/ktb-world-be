@@ -1,6 +1,5 @@
 package com.singtanglab.ktbworld.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.singtanglab.ktbworld.entity.PublicData;
@@ -13,10 +12,10 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +27,9 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/api")
 @Slf4j
 @Getter
-public class TestController {
-    List<PublicData> apiDataList; // 야매버전 용
-    Map<String, Object> apiMapData;
+public class TestController implements CommandLineRunner {
+    public Map<String, Object> apiMapData;
+
     @Autowired
     private PublicDataRepository publicDataRepository;
 
@@ -41,7 +40,8 @@ public class TestController {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @GetMapping("/fetch-data")
-    public ResponseEntity<String> fetchData() {
+    @Override
+    public void run(String... args) throws Exception {
         String apiUrl = "http://api.visitjeju.net/vsjApi/contents/searchList?apiKey=7886e5a411224170a6f707797cf62829&locale=kr&category=c1&page=1";
 
         // 헤더 설정
@@ -60,18 +60,13 @@ public class TestController {
                 requestEntity,
                 String.class
         );
-        log.info("response : {}", response);
         String jsonResponse = response.getBody();
-        log.info("jsonResponse : {}", jsonResponse);
 
         // 야매버전
         try {
             Map<String, Object> jsonDataMap = objectMapper.readValue(jsonResponse, Map.class);
             // 출력하여 확인
-            System.out.println("jsonDataMap: " + jsonDataMap);
             apiMapData = jsonDataMap;
-            System.out.println("apiMapData: " + apiMapData);
-            log.info("apiMapData : {}", apiMapData);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,7 +75,6 @@ public class TestController {
         try {
             // JSON 문자열을 PublicDataResponse 객체 리스트로 변환
             PublicDataResponse publicDataResponse = objectMapper.readValue(jsonResponse, PublicDataResponse.class);
-            log.info("publicDataResponse : {}", publicDataResponse);
 
             // 필터링된 데이터 저장
             List<PublicData> publicDataList = Collections.emptyList();
@@ -91,24 +85,14 @@ public class TestController {
                             publicData.setTitle(data.title());
                             publicData.setAddress(data.address());
                             publicData.setTag(data.tag());
+
                             // thumbnailUrl 설정
                             String thumbnailUrl = null;
-                            if (data.repPhoto() != null) {
-                                for (Object photoid : data.repPhoto().values()) {
-                                    if (photoid instanceof Map) {
-                                        Map<String, Object> photoidMap = (Map<String, Object>) photoid;
-                                        for (Object thumbnailpath : photoidMap.values()) {
-                                            if (thumbnailpath instanceof Map) {
-                                                Map<String, String> thumbnailpathMap = (Map<String, String>) thumbnailpath;
-                                                thumbnailUrl = thumbnailpathMap.get("thumbnailpath");
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (thumbnailUrl != null) {
-                                        break;
-                                    }
-                                }
+                            Object photoidObj = data.repPhoto().get("photoid");
+                            if (photoidObj instanceof Map) {
+                                Map<String, Object> photoidMap = (Map<String, Object>) photoidObj;
+                                Object thumbnailpathObj = photoidMap.get("thumbnailpath");
+                                thumbnailUrl = thumbnailpathObj.toString();
                             }
                             publicData.setThumbnail_url(thumbnailUrl);
                             // 필요한 다른 필드들도 설정
@@ -118,16 +102,17 @@ public class TestController {
             }
             log.info("Filtered Data[0]: {}", publicDataList.get(0).toString());
 
-            // 야매버전 용
-            apiDataList = publicDataList;
-            log.info("apiData : ", apiDataList);
+            // apiMapData 설정
+            apiMapData = publicDataList.stream()
+                    .collect(Collectors.toMap(PublicData::getTitle, data -> data));
+            log.info("apiMapData : ", apiMapData);
 //            publicDataRepository.saveAll(publicDataList);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Data processing failed.");
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Data processing failed.");
         }
 
         // 반환값 설정
-        return ResponseEntity.ok("공공데이터 api 데이터 load 및 가공 성공");
+//        return ResponseEntity.ok("공공데이터 api 데이터 load 및 가공 성공");
     }
 }

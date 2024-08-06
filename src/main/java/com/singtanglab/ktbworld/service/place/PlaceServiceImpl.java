@@ -4,6 +4,7 @@ import com.singtanglab.ktbworld.controller.TestController;
 import com.singtanglab.ktbworld.dto.place.PlaceDto;
 import com.singtanglab.ktbworld.entity.PublicData;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +14,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class PlaceServiceImpl implements PlaceService {
+
+    private final TestController testController;
+
     @Override
     public List<PlaceDto> findPlaces(String section) {
-        TestController testController = new TestController();
-        testController.getApiMapData();
-        List<PublicData> apiDataList = testController.getApiDataList();
+        Map<String, Object> apiDataList = testController.getApiMapData();
 
         // 필터링에 사용할 단어 리스트
         List<String> filterKeywords;
@@ -42,11 +44,13 @@ public class PlaceServiceImpl implements PlaceService {
             filterKeywords = List.of();
         }
 
-        List<PublicData> filteredList = apiDataList.stream()
-                .filter(data -> filterKeywords.stream().anyMatch(keyword -> data.getAddress().contains(keyword)))
+        List<PublicData> publicDataList = apiDataList.values().stream()
+                .filter(value -> value instanceof PublicData)
+                .map(value -> (PublicData) value)
+                .filter(data -> data.getAddress() != null && filterKeywords.stream().anyMatch(keyword -> data.getAddress().contains(keyword)))
                 .collect(Collectors.toList());
 
-        return filteredList.stream()
+        return publicDataList.stream()
                 .map(publicData -> {
                     PlaceDto placeDto = new PlaceDto();
                     placeDto.setId(publicData.getPlace_id());
