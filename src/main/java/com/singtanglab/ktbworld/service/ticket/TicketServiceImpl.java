@@ -1,7 +1,10 @@
 package com.singtanglab.ktbworld.service.ticket;
 
+import com.singtanglab.ktbworld.dto.ticket.TicketDetailResponse;
+import com.singtanglab.ktbworld.dto.ticket.TicketListResponse;
 import com.singtanglab.ktbworld.dto.ticket.TicketRequest;
 import com.singtanglab.ktbworld.dto.ticket.TicketResponse;
+import com.singtanglab.ktbworld.dto.ticket.TicketListResponse.TicketData;
 import com.singtanglab.ktbworld.entity.Category;
 import com.singtanglab.ktbworld.entity.Ticket;
 import com.singtanglab.ktbworld.entity.User;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,4 +106,84 @@ public class TicketServiceImpl implements TicketService {
             return -1;  // 모든 세탁기가 예약된 경우
         }
     }
+
+    @Override
+    @Transactional
+    public TicketListResponse getTickets(String category, String filter) {
+        List<Ticket> tickets;
+        LocalDateTime now = LocalDateTime.now();
+
+        if (category.equalsIgnoreCase("전체")) {
+            tickets = ticketRepository.findAllTickets(now);
+        } else if (category.equalsIgnoreCase("세탁")) {
+            tickets = ticketRepository.findActiveLaundryTickets(now);
+        } else {
+            tickets = ticketRepository.findAllTicketsByCategory(Category.valueOf(category.toUpperCase()));
+        }
+
+        if (filter.equalsIgnoreCase("모집중")) {
+            tickets = tickets.stream()
+                    .filter(ticket -> !ticket.getStatus().equalsIgnoreCase("마감") && !isLaundryInProgress(ticket, now))
+                    .collect(Collectors.toList());
+        } else if (filter.equalsIgnoreCase("마감")) {
+            tickets = tickets.stream()
+                    .filter(ticket -> ticket.getStatus().equalsIgnoreCase("마감") || isLaundryInProgress(ticket, now))
+                    .collect(Collectors.toList());
+        }
+
+        List<TicketData> ticketDataList = tickets.stream()
+                .map(ticket -> new TicketData(
+                        ticket.getId(),
+                        ticket.getCategory().name(),
+                        ticket.getTitle(),
+                        ticket.getDescription(),
+                        ticket.getUserTickets().stream().map(ut -> ut.getUser().getId().intValue()).collect(Collectors.toList()),
+                        ticket.getCapacity(),
+                        ticket.getStatus(),
+                        ticket.getCreatedAt(),
+                        ticket.getStartTime(),
+                        ticket.getEndTime(),
+                        ticket.getMachineId(),
+                        ticket.getLaundryColor(),
+                        ticket.isDry(),
+                        ticket.getDestination()
+                ))
+                .collect(Collectors.toList());
+
+        return new TicketListResponse("TICKET_LIST_LOADED_SUCCESS", ticketDataList.size(), ticketDataList);
+    }
+
+    private boolean isLaundryInProgress(Ticket ticket, LocalDateTime now) {
+        return ticket.getCategory() == Category.LAUNDRY && !ticket.getStatus().equalsIgnoreCase("마감") && ticket.getStartTime().isBefore(now) && ticket.getEndTime().isAfter(now);
+    }
+
+    @Override
+    @Transactional
+    public TicketDetailResponse getTicketById(Long id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+
+        List<String> participantUsers = ticket.getUserTickets().stream()
+                .map(ut -> ut.getUser().getNickname())
+                .collect(Collectors.toList());
+
+        LocalDateTime createdAt = ticket.getUserTickets().stream()
+                .map(UserTicket::getCreatedAt)
+                .findFirst()
+                .orElse(ticket.getCreatedAt());
+
+        TicketDetailResponse.TicketData data = new TicketDetailResponse.TicketData(
+                ticket.getCategory().name(),
+                ticket.getCategory() == Category.LAUNDRY ? ticket.getMachineId() : null,
+                ticket.getStatus(),
+                ticket.getTitle(),
+                ticket.getDescription(),
+                participantUsers,
+                ticket.getAccount(),
+                createdAt
+        );
+
+        return new TicketDetailResponse("TICKET_DETAIL_LOADED_SUCCESS", data);
+    }
+
 }
