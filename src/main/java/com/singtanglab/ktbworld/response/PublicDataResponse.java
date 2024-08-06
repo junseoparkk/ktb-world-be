@@ -1,14 +1,35 @@
 package com.singtanglab.ktbworld.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.singtanglab.ktbworld.entity.PublicData;
 import java.util.List;
+import java.util.Map;
 
-public class PublicDataResponse {
-    @JsonProperty("data")
-    private List<PublicData> data;
+public record PublicDataResponse (
+    @JsonProperty("items")
+    List<PlaceDto> items
+){
+    public record PlaceDto (
+            @JsonProperty("title")
+            String title,
 
-    public List<PublicData> getData() {
-        return data;
+            @JsonProperty("roadaddress")
+            String address,
+
+            @JsonProperty("alltag")
+            String tag,
+
+            @JsonProperty("repPhoto")
+            Map<String, Object> repPhoto
+    ) {
+        public record Photoid (
+                @JsonProperty("photoid")
+                Map<String, Thumbnailpath> photoid
+        ) {
+            public record Thumbnailpath (
+                    @JsonProperty("thumbnailpath")
+                    String thumbnailUrl
+            ) { }
+        }
     }
+
 }

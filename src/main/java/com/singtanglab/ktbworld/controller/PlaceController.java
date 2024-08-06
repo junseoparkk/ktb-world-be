@@ -1,0 +1,29 @@
+package com.singtanglab.ktbworld.controller;
+
+import com.singtanglab.ktbworld.dto.place.PlaceDto;
+import com.singtanglab.ktbworld.service.place.PlaceService;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/places")
+@RequiredArgsConstructor
+public class PlaceController {
+    private final PlaceService placeService;
+
+    @GetMapping("/{section}")
+    public ResponseEntity<List<PlaceDto>> getPlace(@PathVariable("section") String section) {
+        try {
+            List<PlaceDto> places = placeService.findPlaces(section);
+            return ResponseEntity.ok(places);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+}
